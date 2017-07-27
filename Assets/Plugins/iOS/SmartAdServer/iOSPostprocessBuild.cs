@@ -20,7 +20,8 @@ public class iOSPostprocessBuild {
 
 		// Deactivate iOS 9 ATS feature to allow the SDK to request Smart AdServer 
 		// without using HTTPS connection.
-		DeactivateATS (target, pathToBuiltProject);
+		// THIS IS NOT NEEDED ANYMORE ON MODERN UNITY BUILDS, ENABLE IT ONLY IF NECESSARY
+		// DeactivateATS (target, pathToBuiltProject);
 	}
 
 	/// <summary>
