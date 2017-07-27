@@ -241,11 +241,6 @@ namespace SmartAdServer.Unity.Library.UI.Native
 			{
 				callerAdView.NotifyLoadingFailure ();
 			}
-
-			string toString ()
-			{
-				return "AdResponseHandler " + this;
-			}
 		}
 
 		class OnRewardHandler : AndroidJavaProxy
@@ -264,11 +259,6 @@ namespace SmartAdServer.Unity.Library.UI.Native
 				String currency = reward.Call<String> (JavaMethod.GetCurrency);
 
 				callerAdView.NotifyRewardReceived (new RewardReceivedEventArgs (currency, amount));
-			}
-
-			string toString ()
-			{
-				return "OnRewardHandler " + this;
 			}
 		}
 
