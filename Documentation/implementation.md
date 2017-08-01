@@ -28,7 +28,7 @@ The following figure shows a simplified architecture of the sample for accessing
 
 To display ads on _Android_, you need to embed the _Android SDK_ and the _Google Play Services_ library.
 
-Since the embedding all _Google Play Services_ dependencies can be a little but cumbersome, this sample includes _PlayServicesResolver_ that will handle this task automatically. To configure the version used, you can modify the file ```Assets/PlayServicesResolver/Editor/SmartAdServerDependencies``` (more informartions in the [FAQ](faq.md)).
+Since embedding all _Google Play Services_ dependencies can be a little bit cumbersome, this sample includes _PlayServicesResolver_ that will handle this task automatically. To configure the _Google Play Services_ version retrieved, you can modify the file ```Assets/PlayServicesResolver/Editor/SmartAdServerDependencies``` (more informations in the [FAQ](faq.md)).
 
 Embedding a file in the app for _Android_ is done by creating a directory in the _Plugins_ directory, in this case: ```Assets/Plugins/Android/```.
 
@@ -98,7 +98,7 @@ If you need to call a method of the SDK that is not handled by the adapter, you 
 
 4. The newly created ```AdView``` method should then get the native ad view using ```GetNativeAdView()``` and call the newly created method.
 
-The same principle can be applied for any native classes from the mobile SDK (for the rewarded video interstitial for instance).
+The same principle can be applied for any native classes from the mobile SDK (for the _rewarded video interstitial_ for instance).
 
 ## Adding support for a new platform
 
