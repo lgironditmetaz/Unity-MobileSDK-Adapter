@@ -8,7 +8,7 @@ using SmartAdServer.Unity.Library.Models;
 
 namespace SmartAdServer.Unity.Library.UI.Native
 {
-#if UNITY_ANDROID
+	#if UNITY_ANDROID
 	/// <summary>
 	/// Android native ad view implementation.
 	/// </summary>
@@ -310,5 +310,5 @@ namespace SmartAdServer.Unity.Library.UI.Native
 			return _adViewClass;
 		}
 	}
-#endif
+	#endif
 }

@@ -12,7 +12,7 @@ using SmartAdServer.Unity.Library.Models;
 
 namespace SmartAdServer.Unity.Library.UI.Native
 {
-#if UNITY_IPHONE
+	#if UNITY_IOS
 	public class iOSNativeAdView : NativeAdView
 	{
 		private int _currentAdView = -1;
@@ -171,5 +171,5 @@ namespace SmartAdServer.Unity.Library.UI.Native
 		}
 
 	}
-#endif
+	#endif
 }

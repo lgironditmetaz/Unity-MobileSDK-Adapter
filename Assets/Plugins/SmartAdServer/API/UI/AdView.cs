@@ -2,7 +2,6 @@
 using System.Collections;
 
 using SmartAdServer.Unity.Library.Models;
-using SmartAdServer.Unity.Library.UI.Factory;
 using SmartAdServer.Unity.Library.UI.Native;
 using System;
 
@@ -36,11 +35,6 @@ namespace SmartAdServer.Unity.Library.UI
 		/// Instance representing a native ad view.
 		/// </summary>
 		protected NativeAdView NativeAdView;
-
-		/// <summary>
-		/// Instance of an ad view factory that will be used to create the right NativeAdView object.
-		/// </summary>
-		private NativeAdViewFactory _factory;
 
 		/// <summary>
 		/// Creates the native view.
@@ -171,25 +165,6 @@ namespace SmartAdServer.Unity.Library.UI
 				NativeAdView.NativeAdViewRewardReceived += NativeAdViewRewardReceived;
 			}
 			return NativeAdView;
-		}
-
-		/// <summary>
-		/// Gets the factory corresponding to the current plaform and instanciates it if necessary.
-		/// </summary>
-		/// <returns>The factory corresponding to the current platform.</returns>
-		protected NativeAdViewFactory GetFactory ()
-		{
-			if (_factory == null) {
-				PlatformType platform = PlatformType.Default;
-				if (Application.platform == RuntimePlatform.Android) {
-					platform = PlatformType.Android;
-				} else if (Application.platform == RuntimePlatform.IPhonePlayer) {
-					platform = PlatformType.iOS;
-				}
-				_factory = new NativeAdViewFactory (platform);
-			}
-
-			return _factory;
 		}
 	}
 }

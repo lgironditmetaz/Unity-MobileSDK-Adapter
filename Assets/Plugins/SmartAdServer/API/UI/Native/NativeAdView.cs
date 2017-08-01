@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 
 using SmartAdServer.Unity.Library.Models;
+using SmartAdServer.Unity.Library;
 
 namespace SmartAdServer.Unity.Library.UI.Native
 {

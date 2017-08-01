@@ -2,6 +2,8 @@
 using System.Collections;
 
 using SmartAdServer.Unity.Library.Models;
+using SmartAdServer.Unity.Library.UI.Native;
+using SmartAdServer.Unity.Library.Factory;
 
 namespace SmartAdServer.Unity.Library.UI
 {
@@ -23,7 +25,7 @@ namespace SmartAdServer.Unity.Library.UI
 		/// </summary>
 		override protected void CreateNativeView ()
 		{
-			NativeAdView = GetFactory ().BuildInstance (AdType.Interstitial);
+			NativeAdView = PlatformFactory.Instance.BuildInstance<NativeAdView> (AdType.Interstitial);
 		}
 	}
 }
