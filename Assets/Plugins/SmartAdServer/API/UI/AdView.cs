@@ -157,7 +157,7 @@ namespace SmartAdServer.Unity.Library.UI
 		////////////////////////////////////
 
 		/// <summary>
-		/// Gets the native ad view and instanciate it if necessary.
+		/// Gets the native ad view and instantiate it if necessary.
 		/// </summary>
 		/// <returns>The native ad view.</returns>
 		protected NativeAdView GetNativeAdView ()

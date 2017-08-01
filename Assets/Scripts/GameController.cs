@@ -176,7 +176,7 @@ public class GameController : MonoBehaviour
 
 	public void ActualReloading ()
 	{
-		// Do not forget to destroy any instanciated ad view when you don't need them anymore
+		// Do not forget to destroy any instantiated ad view when you don't need them anymore
 		// to avoid any memory leaks that can appear on some platforms.
 		if (_bannerView != null) {
 			_bannerView.Destroy ();
