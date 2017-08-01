@@ -6,15 +6,17 @@
 
 The integration of a mobile SDK can be made using the native plugin capability provided by Unity: http://docs.unity3d.com/Manual/NativePlugins.html
 
-Using this capability, _Unity_ will allow direct or indirect access to native code if the application is running on the targeted platform. This plugin feature will also allow us to make specific configurations depending on the platform currently used (to request permissions if the application on _Android_ for example).
+Using this capability, _Unity_ will allow direct or indirect access to native code if the application is running on the targeted platform. This plugin feature will also allow us to make specific configurations depending on the platform currently used (to request permissions if the application is running on _Android_ for example).
 
 This sample is divided in several layers:
 
 1. the **Unity Game** itself
 2. a **Smart AdServer API** layer to provide a standard C# API used to load and display ads
-3. a **native ad view** layer that will instantiate and handle ad views for supported platforms (in this sample: _Android_, _iOS_ and _'Default'_)
+3. a **native class factory** layer that will instantiate and handle native class instances like ad views for supported platforms (in this sample: _Android_, _iOS_ and _'Default'_)
 4. a **C wrapper** layer that will provide a C interface for SDK that can't be accessed directly through managed code (only required for _iOS_ in this sample)
 5. a **SDK** layer (the _Android_ and the _iOS_ SDK)
+
+The following figure shows a simplified architecture of the sample for accessing the _ad view_ class from the native SDK. Other native classes are handled the same way (through the **native class factory**).
 
 <p align="center">
   <img src="Images/main_structure.png" alt="Main Structure"/>
@@ -25,6 +27,8 @@ This sample is divided in several layers:
 ### SDK integration
 
 To display ads on _Android_, you need to embed the _Android SDK_ and the _Google Play Services_ library.
+
+Since the embedding all _Google Play Services_ dependencies can be a little but cumbersome, this sample includes _PlayServicesResolver_ that will handle this task automatically. To configure the version used, you can modify the file ```Assets/PlayServicesResolver/Editor/SmartAdServerDependencies``` (more informartions in the [FAQ](faq.md)).
 
 Embedding a file in the app for _Android_ is done by creating a directory in the _Plugins_ directory, in this case: ```Assets/Plugins/Android/```.
 
@@ -68,9 +72,7 @@ To display ads on _iOS_, you need to embed the _iOS SDK_ in the ```Assets/Plugin
 * all header files
 * the bundle file
 
-You will also need to import the right frameworks in the app and deactivate _Apple Transport Security_ (since third party scripts might not support HTTPS yet).
-
-This is done in the ```iOSPostprocessBuild``` class, through the method ```LinkLibraries``` for the frameworks import and ```DeactivateATS``` for the _Apple Transport Security_ deactivation.
+You will also need to import the right frameworks in the app. This is done in the ```iOSPostprocessBuild``` class, through the method ```LinkLibraries```.
 
 Since _Unity_ does not provide any API to manipulate _iOS_ projects, these two methods are directly modifying _Xcode_ project files.
 
@@ -84,26 +86,28 @@ Every ```SASAdView``` instances created in the _C wrapper_ is associated with an
 
 The number of valid _IDs_ is fixed in the current _C wrapper_ implementation. This will probably be changed in a future version: in the meantime, if you want to change the number of _IDs_, you can edit the variable ```MAX_AD_VIEW``` in the file ```SmartImpl.mm```.
 
-## Adding an unsupported method call to the adapter
+## Adding an unsupported method call from SASAdView to the adapter
 
 If you need to call a method of the SDK that is not handled by the adapter, you can add it yourself:
 
 1. Add the abstract method you need in the ```NativeAdView``` class.
 
-2. Add the method implementation for each implementation of ```NativeAdView``` (```AndroidNativeAdView``` and ```iOSNativeAdView``` for now). Check _Interacting with Java classes from Unity_ and _Interacting with ObjC code from Unity_ if you need more informations on how to develop and native implementation for each plaform.
+2. Add the method implementation for each implementation of ```NativeAdView``` (```AndroidNativeAdView``` and ```iOSNativeAdView``` for now). Check _Interacting with Java classes from Unity_ and _Interacting with ObjC code from Unity_ if you need more informations on how to develop and native implementation for each platform.
 
 3. Add the method in ```AdView```, in ```BannerView``` or in ```InterstitialView``` depending if the method will be used on banners, on interstitials or on both.
 
 4. The newly created ```AdView``` method should then get the native ad view using ```GetNativeAdView()``` and call the newly created method.
 
+The same principle can be applied for any native classes from the mobile SDK (for the rewarded video interstitial for instance).
+
 ## Adding support for a new platform
 
 You may want to call ads on another platform (for instance using direct calls to the API or web creatives). You can add support for another platform supported by _Unity_ by following these steps:
 
-1. Add a new implementation of the abstract class ```NativeAdView```. If you are calling native code from this platform, remember to surround it with conditional preprocessor instructions like ```#if #endif``` or your project will not build anymore on other platforms.
+1. Add a new implementation of all abstract classes (like ```NativeAdView```). If you are calling native code from this platform, remember to surround it with conditional preprocessor instructions like ```#if #endif``` or your project will not build anymore on other platforms.
 
-2. Add a new implementation of the abstract class ```NativeAdViewBuilder```. This class will only be used to instantiate an instance of your native ad view.
+2. Add a new implementation of the abstract class ```NativeBuilder```. This class will only be used to instantiate an instance of your native classes.
 
-3. Add your new builder as a case for the switch that you'll find in the ```ConfigurePlatform``` method.
+3. Add your new builder as a case for the switch that you'll find in the ```ConfigureBuilder``` method in the ```PlatformFactory``` class.
 
-The adapter will now call your native ad view when running on the right platform. If you forgot anything, the ```DefaultNativeAdView``` will be called instead (this class only displays console logs).
+The adapter will now call your native ad view (and all the other native classes you need) when running on the right platform. If you forgot anything, the relevant default native class ```DefaultNativeAdView``` for an ad view for instance) will be called instead (this class will only displays console logs).
