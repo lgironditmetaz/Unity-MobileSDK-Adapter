@@ -23,6 +23,24 @@ namespace SmartAdServer.Unity.Library.Models
 		/// <param name="siteId">Site ID (required).</param>
 		/// <param name="pageId">Page ID (required).</param>
 		/// <param name="formatId">Format ID (required).</param>
+		/// <param name="target">Target string (optional).</param>
+		public AdConfig (string baseUrl, int siteId, string pageId, int formatId, string target)
+		{
+			_baseUrl = baseUrl;
+			_siteId = siteId;
+			_pageId = pageId;
+			_formatId = formatId;
+			_master = true;
+			_target = target;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SmartAdServer.Unity.Library.Models.AdConfig"/> class.
+		/// </summary>
+		/// <param name="baseUrl">Base URL (required).</param>
+		/// <param name="siteId">Site ID (required).</param>
+		/// <param name="pageId">Page ID (required).</param>
+		/// <param name="formatId">Format ID (required).</param>
 		/// <param name="master">If set to <c>true</c>, the call will be considered as Master (required).</param>
 		/// <param name="target">Target string (optional).</param>
 		public AdConfig (string baseUrl, int siteId, string pageId, int formatId, bool master, string target)
