@@ -1,6 +1,9 @@
 ﻿using System;
+using UnityEngine;
+
 using SmartAdServer.Unity.Library.UI.Native;
 using SmartAdServer.Unity.Library.Models;
+using SmartAdServer.Unity.Library.Rewarded.Native;
 
 namespace SmartAdServer.Unity.Library.Factory
 {
@@ -19,7 +22,10 @@ namespace SmartAdServer.Unity.Library.Factory
 		public T BuildInstance<T> (params object[] constructorParameters) where T : class {
 			if (typeof(T) == typeof(NativeAdView)) {
 				return new DefaultNativeAdView ((AdType)constructorParameters[0]) as T;
+			} else if (typeof(T) == typeof(NativeRewardedVideoManager)) {
+				return new DefaultNativeRewardedVideoManager () as T;
 			} else {
+				Debug.Log ("DefaultBuilder > Unable to load native class '" + typeof(T).ToString() + "'");
 				throw new NativeClassNotFoundException ("Native class '" + typeof(T).ToString() + "' cannot be found!");
 			}
 		}
