@@ -5,6 +5,7 @@ using System.Collections;
 using SmartAdServer.Unity.Library.Constants;
 using SmartAdServer.Unity.Library.Events;
 using SmartAdServer.Unity.Library.Models;
+using SmartAdServer.Unity.Library.Utils;
 
 namespace SmartAdServer.Unity.Library.UI.Native
 {
@@ -35,11 +36,6 @@ namespace SmartAdServer.Unity.Library.UI.Native
 		private AndroidJavaObject _adViewObject;
 
 		/// <summary>
-		/// The java object representing the activity displaying the game.
-		/// </summary>
-		private AndroidJavaObject _unityActivity;
-
-		/// <summary>
 		/// The java class representing the ad view.
 		/// </summary>
 		private static AndroidJavaClass _adViewClass;
@@ -57,20 +53,20 @@ namespace SmartAdServer.Unity.Library.UI.Native
 		public AndroidNativeAdView (AdType type) : base(type)
 		{
 			Debug.Log ("AndroidNativeAdView > DefaultNativeAdView(" + type + ")");
-			RunOnJavaUiThread (InitializeBannerViewOnUiThread);
+			AndroidUtils.Instance.RunOnJavaUiThread (InitializeBannerViewOnUiThread);
 		}
 		
 		override public void LoadAd (AdConfig adConfig)
 		{
 			Debug.Log ("AndroidNativeAdView > LoadAd(" + adConfig + ")");
 			_currentAdConfig = adConfig;
-			RunOnJavaUiThread (LoadAdOnUiThread);
+			AndroidUtils.Instance.RunOnJavaUiThread (LoadAdOnUiThread);
 		}
 		
 		override public void Destroy ()
 		{
 			Debug.Log ("AndroidNativeAdView > Destroy()");
-			RunOnJavaUiThread (DestroyOnUiThread);
+			AndroidUtils.Instance.RunOnJavaUiThread (DestroyOnUiThread);
 		}
 		
 		override public int GetDefaultAdLoadingTimeout ()
@@ -108,7 +104,7 @@ namespace SmartAdServer.Unity.Library.UI.Native
 		{
 			Debug.Log ("AndroidNativeAdView > SetVisible(" + visible + ")");
 
-			RunOnJavaUiThread (() => {
+			AndroidUtils.Instance.RunOnJavaUiThread (() => {
 				SetAdViewVisibilityOnUiThread (visible);
 			});
 		}
@@ -117,7 +113,7 @@ namespace SmartAdServer.Unity.Library.UI.Native
 		{
 			Debug.Log ("AndroidNativeAdView > DisplayBanner(" + adPosition + ")");
 			_currentAdPosition = adPosition;
-			RunOnJavaUiThread (AddBannerToHierarchyOnUiThread);
+			AndroidUtils.Instance.RunOnJavaUiThread (AddBannerToHierarchyOnUiThread);
 		}
 
 		
@@ -133,10 +129,10 @@ namespace SmartAdServer.Unity.Library.UI.Native
 			Debug.Log ("SmartAdServer.Unity.Library.UI.Native.AndroidNativeAdView: initializing AdView");
 
 			GetAdViewClass().CallStatic (JavaMethod.SetUnityModeEnabled, true);
-			_adViewObject = new AndroidJavaObject (Type == AdType.Banner ? JavaClass.SASBannerView : JavaClass.SASInterstitialView, GetUnityActivity ());
+			_adViewObject = new AndroidJavaObject (Type == AdType.Banner ? JavaClass.SASBannerView : JavaClass.SASInterstitialView, AndroidUtils.Instance.GetUnityActivity ());
 
 			if (Type == AdType.Interstitial) {
-				var loader = new AndroidJavaObject (JavaClass.SASRotatingImageLoader, GetUnityActivity ());
+				var loader = new AndroidJavaObject (JavaClass.SASRotatingImageLoader, AndroidUtils.Instance.GetUnityActivity ());
 				var blackColor = new AndroidJavaClass (JavaClass.Color).CallStatic<int> (JavaMethod.ParseColor, "#aa000000");
 				loader.Call (JavaMethod.SetBackgroundColor, blackColor); // Set a black overlay for the loader
 
@@ -186,7 +182,7 @@ namespace SmartAdServer.Unity.Library.UI.Native
 
 			int matchParentObject = -1; // MATCH_PARENT equals -1 according to https://developer.android.com/reference/android/view/ViewGroup.LayoutParams.html#MATCH_PARENT
 			
-			var density = GetUnityActivity ().Call<AndroidJavaObject> (JavaMethod.GetResources).Call<AndroidJavaObject> (JavaMethod.GetDisplayMetrics).Get<float> (JavaField.Density);
+			var density = AndroidUtils.Instance.GetUnityActivity ().Call<AndroidJavaObject> (JavaMethod.GetResources).Call<AndroidJavaObject> (JavaMethod.GetDisplayMetrics).Get<float> (JavaField.Density);
 
 			var frameLayoutParamObject = new AndroidJavaObject (JavaClass.FrameLayoutLayoutParam, matchParentObject, (int)(50 * density));
 
@@ -195,7 +191,7 @@ namespace SmartAdServer.Unity.Library.UI.Native
 
 			frameLayoutParamObject.Set (JavaField.Gravity, gravity | gravityCenterHorizontal);
 			
-			GetUnityActivity ().Call (JavaMethod.AddContentView, GetAdViewObject (), frameLayoutParamObject);
+			AndroidUtils.Instance.GetUnityActivity ().Call (JavaMethod.AddContentView, GetAdViewObject (), frameLayoutParamObject);
 		}
 
 		/// <summary>
@@ -262,20 +258,6 @@ namespace SmartAdServer.Unity.Library.UI.Native
 			}
 		}
 
-		
-		////////////////////////////////////
-		// Interaction with Java SDK
-		////////////////////////////////////
-
-		/// <summary>
-		/// Runs some code on Android UI thread.
-		/// </summary>
-		/// <param name="method">The method to run on UI thread.</param>
-		void RunOnJavaUiThread (Action method)
-		{
-			GetUnityActivity ().Call (JavaMethod.RunOnUiThread, new AndroidJavaRunnable (method));
-		}
-
 		/// <summary>
 		/// Gets the java object representing the ad view.
 		/// </summary>
@@ -283,19 +265,6 @@ namespace SmartAdServer.Unity.Library.UI.Native
 		AndroidJavaObject GetAdViewObject ()
 		{
 			return _adViewObject;
-		}
-
-		/// <summary>
-		/// Gets the activity displaying the game.
-		/// </summary>
-		/// <returns>The activity displaying the game.</returns>
-		AndroidJavaObject GetUnityActivity ()
-		{
-			if (_unityActivity == null) {
-				var unityPlayer = new AndroidJavaClass (JavaClass.UnityPlayer); 
-				_unityActivity = unityPlayer.GetStatic<AndroidJavaObject> (JavaMethod.CurrentActivity);
-			}
-			return _unityActivity;
 		}
 
 		/// <summary>
