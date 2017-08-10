@@ -9,11 +9,20 @@ using SmartAdServer.Unity.Library.Utils;
 
 namespace SmartAdServer.Unity.Library.Rewarded.Native
 {
+	/// <summary>
+	/// Android native rewarded video manager implementation.
+	/// </summary>
 	public class AndroidNativeRewardedVideoManager : NativeRewardedVideoManager
 	{
-
+		/// <summary>
+		/// The Java rewarded video manager.
+		/// </summary>
 		private AndroidJavaObject _rewardedVideoManager;
 
+		/// <summary>
+		/// Loads a rewarded video interstitial for a given placement.
+		/// </summary>
+		/// <param name="adConfig">The ad config representing the placement.</param>
 		override public void LoadRewardedVideo(AdConfig adConfig)
 		{
 			Debug.Log ("AndroidNativeRewardedVideoManager > LoadRewardedVideo(" + adConfig + ")");
@@ -25,6 +34,11 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 			});
 		}
 
+		/// <summary>
+		/// Shows a rewarded video interstitial for a given placement if available.
+		/// Rewarded video availability for a placement can be checked using the method <see cref="SmartAdServer.Unity.Library.Rewarded.RewardedVideoManager.CheckRewardedVideoAvailability"/>.
+		/// </summary>
+		/// <param name="adConfig">The ad config representing the placement.</param>
 		override public void ShowRewardedVideo(AdConfig adConfig)
 		{
 			Debug.Log ("AndroidNativeRewardedVideoManager > ShowRewardedVideo(" + adConfig + ")");
@@ -36,6 +50,12 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 			});
 		}
 
+		/// <summary>
+		/// Checks if a rewarded video interstitial is available for for a given placement.
+		/// This operation is asynchronous and requires a callback function send its result.
+		/// </summary>
+		/// <param name="adConfig">Ad config.</param>
+		/// <param name="callback">The callback that will be called with the availability status.</param>
 		override public void CheckRewardedVideoAvailability(AdConfig adConfig, Action<bool> callback)
 		{
 			Debug.Log ("AndroidNativeRewardedVideoManager > CheckRewardedVideoAvailability(" + adConfig + ")");
@@ -49,6 +69,10 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 			});
 		}
 
+		/// <summary>
+		/// Retrieve the Java rewarded video manager from the Android SDK.
+		/// </summary>
+		/// <returns>The rewarded video manager.</returns>
 		private AndroidJavaObject GetRewardedVideoManager()
 		{
 			if (_rewardedVideoManager == null) {
@@ -57,6 +81,9 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 			return _rewardedVideoManager;
 		}
 
+		/// <summary>
+		/// Class that will act as a Java listener to handle ad call success & failure and playback events.
+		/// </summary>
 		class RewardedVideoListener : AndroidJavaProxy
 		{
 			AndroidNativeRewardedVideoManager callerManager;
