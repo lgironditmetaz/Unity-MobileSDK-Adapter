@@ -1,38 +1,60 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 using SmartAdServer.Unity.Library.Models;
 using SmartAdServer.Unity.Library.Constants;
 using SmartAdServer.Unity.Library;
+using SmartAdServer.Unity.Library.Utils;
 
 namespace SmartAdServer.Unity.Library.Rewarded.Native
 {
-	public class AndroidNativeRewardedVideoManager : NativeRewardedVideoManager {
+	public class AndroidNativeRewardedVideoManager : NativeRewardedVideoManager
+	{
 
-		/// <summary>
-		/// The java object representing the activity displaying the game.
-		/// </summary>
-		private AndroidJavaObject _unityActivity;
-
-		private AdConfig _currentAdConfig; // TODO this can't work if the user call several placement at the same time which is a legit use case
+		private AndroidJavaObject _rewardedVideoManager;
 
 		override public void LoadRewardedVideo(AdConfig adConfig)
 		{
 			Debug.Log ("AndroidNativeRewardedVideoManager > LoadRewardedVideo(" + adConfig + ")");
-			_currentAdConfig = adConfig;
-			RunOnJavaUiThread (LoadOnUiThread);
+
+			AndroidUtils.Instance.RunOnJavaUiThread (() => {
+				var rewardedVideoPlacement = new AndroidJavaObject (JavaClass.SASRewardedVideoPlacement, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
+				GetRewardedVideoManager ().Call (JavaMethod.SetRewardedVideoListener, new RewardedVideoListener(this));
+				GetRewardedVideoManager ().Call (JavaMethod.LoadRewardedVideo, rewardedVideoPlacement);
+			});
 		}
 
 		override public void ShowRewardedVideo(AdConfig adConfig)
 		{
 			Debug.Log ("AndroidNativeRewardedVideoManager > ShowRewardedVideo(" + adConfig + ")");
-			// TODO
+
+			AndroidUtils.Instance.RunOnJavaUiThread (() => {
+				var rewardedVideoPlacement = new AndroidJavaObject (JavaClass.SASRewardedVideoPlacement, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
+				GetRewardedVideoManager ().Call (JavaMethod.SetRewardedVideoListener, new RewardedVideoListener(this));
+				GetRewardedVideoManager ().Call (JavaMethod.ShowRewardedVideo, rewardedVideoPlacement, AndroidUtils.Instance.GetUnityActivity());
+			});
 		}
 
-		override public bool HasRewardedVideo(AdConfig adConfig)
+		override public void CheckRewardedVideoAvailability(AdConfig adConfig, Action<bool> callback)
 		{
-			Debug.Log ("AndroidNativeRewardedVideoManager > HasRewardedVideo(" + adConfig + ")");
-			return false;
+			Debug.Log ("AndroidNativeRewardedVideoManager > CheckRewardedVideoAvailability(" + adConfig + ")");
+
+			AndroidUtils.Instance.RunOnJavaUiThread (() => {
+				var rewardedVideoPlacement = new AndroidJavaObject (JavaClass.SASRewardedVideoPlacement, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
+				GetRewardedVideoManager ().Call (JavaMethod.SetRewardedVideoListener, new RewardedVideoListener(this));
+				var available = GetRewardedVideoManager ().Call<bool> (JavaMethod.HasRewardedVideo, rewardedVideoPlacement);
+
+				callback (available);
+			});
+		}
+
+		private AndroidJavaObject GetRewardedVideoManager()
+		{
+			if (_rewardedVideoManager == null) {
+				_rewardedVideoManager = new AndroidJavaClass (JavaClass.SASRewardedVideoManager).CallStatic<AndroidJavaObject> (JavaMethod.GetInstance, AndroidUtils.Instance.GetUnityActivity ());
+			}
+			return _rewardedVideoManager;
 		}
 
 		class RewardedVideoListener : AndroidJavaProxy
@@ -49,11 +71,11 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 			}
 
 			void onRewardedVideoAdLoadingFailed(AndroidJavaObject placement, AndroidJavaObject exception) {
-				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoAdLoadingFailed(" + exception.Call<String>(JavaMethod.ToString) + ")");
+				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoAdLoadingFailed(" + exception.Call<String>(JavaMethod.ToStringJava) + ")");
 			}
 
 			void onRewardedVideoPlaybackError(AndroidJavaObject placement, AndroidJavaObject exception) {
-				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoPlaybackError(" + exception.Call<String>(JavaMethod.ToString) + ")");
+				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoPlaybackError(" + exception.Call<String>(JavaMethod.ToStringJava) + ")");
 			}
 
 			void onRewardedVideoClosed(AndroidJavaObject placement) {
@@ -68,7 +90,7 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardReceived");
 			}
 
-			void onRewardedVideoEvent(AndroidJavaObject placement, AndroidJavaObject videoEvent) {
+			void onRewardedVideoEvent(AndroidJavaObject placement, Int32 videoEvent) {
 				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoEvent");
 			}
 
@@ -84,38 +106,6 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoEndCardDisplayed");
 			}
 
-		}
-
-		void LoadOnUiThread()
-		{
-			Debug.Log ("AndroidNativeRewardedVideoManager > loadRewardedVideo()");
-			var adConfig = _currentAdConfig;
-			var rewardedVideoManager = new AndroidJavaClass (JavaClass.SASRewardedVideoManager).CallStatic<AndroidJavaObject> (JavaMethod.GetInstance, GetUnityActivity ());
-			var rewardedVideoPlacement = new AndroidJavaObject (JavaClass.SASRewardedVideoPlacement, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
-			rewardedVideoManager.Call (JavaMethod.SetRewardedVideoListener, new RewardedVideoListener(this));
-			rewardedVideoManager.Call (JavaMethod.LoadRewardedVideo, rewardedVideoPlacement);
-		}
-
-		/// <summary>
-		/// Runs some code on Android UI thread.
-		/// </summary>
-		/// <param name="method">The method to run on UI thread.</param>
-		void RunOnJavaUiThread (Action method)
-		{
-			GetUnityActivity ().Call (JavaMethod.RunOnUiThread, new AndroidJavaRunnable (method));
-		}
-
-		/// <summary>
-		/// Gets the activity displaying the game.
-		/// </summary>
-		/// <returns>The activity displaying the game.</returns>
-		AndroidJavaObject GetUnityActivity ()
-		{
-			if (_unityActivity == null) {
-				var unityPlayer = new AndroidJavaClass (JavaClass.UnityPlayer); 
-				_unityActivity = unityPlayer.GetStatic<AndroidJavaObject> (JavaMethod.CurrentActivity);
-			}
-			return _unityActivity;
 		}
 
 	}

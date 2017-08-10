@@ -18,7 +18,7 @@ namespace SmartAdServer.Unity.Library.Constants
 		
 		public static readonly string RunOnUiThread = "runOnUiThread";
 		public static readonly string CurrentActivity = "currentActivity";
-		public static readonly string ToString = "toString";
+		public static readonly string ToStringJava = "toString";
 
 		// Smart AdServer
 		public static readonly string GetBaseUrl = "getBaseUrl";
@@ -37,6 +37,8 @@ namespace SmartAdServer.Unity.Library.Constants
 
 		public static readonly string GetInstance = "getInstance";
 		public static readonly string LoadRewardedVideo = "loadRewardedVideo";
+		public static readonly string ShowRewardedVideo = "showRewardedVideo";
+		public static readonly string HasRewardedVideo = "hasRewardedVideo";
 		public static readonly string SetRewardedVideoListener = "setRewardedVideoListener";
 	}
 }

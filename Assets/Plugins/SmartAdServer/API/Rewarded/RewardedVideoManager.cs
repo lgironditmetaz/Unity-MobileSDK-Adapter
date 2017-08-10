@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +9,8 @@ using SmartAdServer.Unity.Library.Factory;
 
 namespace SmartAdServer.Unity.Library.Rewarded
 {
-	public class RewardedVideoManager {
+	public class RewardedVideoManager
+	{
 		
 		private static readonly RewardedVideoManager _instance = new RewardedVideoManager();
 
@@ -36,8 +38,8 @@ namespace SmartAdServer.Unity.Library.Rewarded
 			_nativeRewardedVideoManager.ShowRewardedVideo (adConfig);
 		}
 
-		public bool HasRewardedVideo(AdConfig adConfig) {
-			return false;
+		public void CheckRewardedVideoAvailability(AdConfig adConfig, Action<bool> callback) {
+			_nativeRewardedVideoManager.CheckRewardedVideoAvailability (adConfig, callback);
 		}
 		
 	}
