@@ -14,6 +14,7 @@ namespace SmartAdServer.Unity.Library.Constants
 		public static readonly string Model = Base + "/model";
 		public static readonly string Provider = Base + "/provider";
 		public static readonly string Ui = Base + "/ui";
+		public static readonly string Rewarded = Base + "/rewarded";
 
 		// Unity
 		public static readonly string Unity = "com.unity3d";

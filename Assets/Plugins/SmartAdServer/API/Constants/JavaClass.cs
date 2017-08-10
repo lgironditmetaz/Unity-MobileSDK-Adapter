@@ -22,6 +22,9 @@ namespace SmartAdServer.Unity.Library.Constants
 		public static readonly string SASBannerView = JavaPackage.Base + "/SASBannerView";
 		public static readonly string SASInterstitialView = JavaPackage.Base + "/SASInterstitialView";
 		public static readonly string SASRotatingImageLoader = JavaPackage.Ui + "/SASRotatingImageLoader";
+		public static readonly string SASRewardedVideoManager = JavaPackage.Rewarded + "/SASRewardedVideoManager";
+		public static readonly string SASRewardedVideoPlacement = JavaPackage.Rewarded + "/SASRewardedVideoPlacement";
+		public static readonly string SASRewardedVideoListener = JavaPackage.Rewarded + "/SASRewardedVideoListener";
 
 		// Unity
 		public static readonly string UnityPlayer = JavaPackage.UnityPlayer + ".UnityPlayer";
