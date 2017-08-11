@@ -12,6 +12,9 @@
 #import "SASInterstitialView.h"
 #import "SASAdView.h"
 #import "SASReward.h"
+#import "SASRewardedVideo.h"
+#import "SASRewardedVideoDelegate.h"
+#import "SASRewardedVideoPlacement.h"
 
 // Maximum number of ad views that can be handled by the native wrapper.
 #define MAX_AD_VIEW       100
@@ -78,6 +81,34 @@
 
 @end
 
+
+
+@interface SASRewardedVideoDelegateHolder <SASRewardedVideoDelegate>
+@end
+
+@implementation SASRewardedVideoDelegateHolder
+- (void)rewardedVideoDidLoadAd:(SASAd *)ad forPlacement:(SASRewardedVideoPlacement *)placement {
+}
+- (void)rewardedVideoDidFailToLoadForPlacement:(SASRewardedVideoPlacement *)placement error:(nullable NSError *)error {
+}
+- (void)rewardedVideoDidFailToShowForPlacement:(SASRewardedVideoPlacement *)placement error:(nullable NSError *)error {
+}
+- (void)rewardedVideoDidAppearForPlacement:(SASRewardedVideoPlacement *)placement fromViewController:(UIViewController *)controller {
+}
+- (void)rewardedVideoDidDisappearForPlacement:(SASRewardedVideoPlacement *)placement fromViewController:(UIViewController *)controller {
+}
+- (void)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement didSendVideoEvent:(SASVideoEvent)videoEvent {
+}
+- (void)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement didCollectReward:(SASReward *)reward {
+}
+- (BOOL)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement shouldHandleURL:(NSURL *)URL {
+    return YES;
+}
+- (void)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement willPresentModalViewFromViewController:(UIViewController *)controller {
+}
+- (void)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement willDismissModalViewFromViewController:(UIViewController *)controller {
+}
+@end
 
 /////////////////////////////////////////////////////////////////////////////////
 // C functions used to handle ad requests and ad display.
@@ -177,6 +208,26 @@ extern "C" {
     [adViews[adId] setDelegate:nil];
     delegates[adId] = nil;
     adViews[adId] = nil;
+  }
+
+  SASRewardedVideoPlacement *placementFromID(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    NSString *baseUrlString = [[NSString alloc] initWithUTF8String:baseUrl];
+    NSString *pageIdString = [[NSString alloc] initWithUTF8String:pageId];
+    NSString *targetString = [[NSString alloc] initWithUTF8String:target];
+    [SASAdView setSiteID:siteId baseURL:baseUrlString];
+    return [SASRewardedVideoPlacement rewardedVideoPlacementWithPageId:[pageIdString intValue]  formatId:formatId target:targetString];
+  }
+
+  void _LoadRewardedVideo(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    [SASRewardedVideo loadAdForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
+  }
+
+  void _ShowRewardedVideo(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    [SASRewardedVideo showAdForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target) fromViewController:[[UIApplication sharedApplication] keyWindow].rootViewController];
+  }
+
+  int _HasRewardedVideo(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    return [SASRewardedVideo isAdReadyForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)] ? 1 : 0;
   }
 
 }
