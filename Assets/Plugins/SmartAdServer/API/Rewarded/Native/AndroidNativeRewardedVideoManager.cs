@@ -9,6 +9,7 @@ using SmartAdServer.Unity.Library.Utils;
 
 namespace SmartAdServer.Unity.Library.Rewarded.Native
 {
+	#if UNITY_ANDROID
 	/// <summary>
 	/// Android native rewarded video manager implementation.
 	/// </summary>
@@ -136,4 +137,5 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		}
 
 	}
+	#endif
 }
