@@ -66,9 +66,8 @@ namespace SmartAdServer.Unity.Library.Rewarded
 		/// This operation is asynchronous and requires a callback function send its result.
 		/// </summary>
 		/// <param name="adConfig">Ad config.</param>
-		/// <param name="callback">The callback that will be called with the availability status.</param>
-		public void CheckRewardedVideoAvailability(AdConfig adConfig, Action<bool> callback) {
-			_nativeRewardedVideoManager.CheckRewardedVideoAvailability (adConfig, callback);
+		public bool HasRewardedVideo(AdConfig adConfig) {
+			return _nativeRewardedVideoManager.HasRewardedVideo (adConfig);
 		}
 		
 	}

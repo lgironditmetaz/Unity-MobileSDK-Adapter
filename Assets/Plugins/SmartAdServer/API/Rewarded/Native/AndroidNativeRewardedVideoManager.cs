@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -53,21 +54,29 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 
 		/// <summary>
 		/// Checks if a rewarded video interstitial is available for for a given placement.
-		/// This operation is asynchronous and requires a callback function send its result.
 		/// </summary>
-		/// <param name="adConfig">Ad config.</param>
-		/// <param name="callback">The callback that will be called with the availability status.</param>
-		override public void CheckRewardedVideoAvailability(AdConfig adConfig, Action<bool> callback)
+		/// <returns><c>true</c> if a rewarded video interstitial is available for this adConfig; otherwise, <c>false</c>.</returns>
+		/// <param name="adConfig">The ad config representing the placement.</param>
+		override public bool HasRewardedVideo(AdConfig adConfig)
 		{
 			Debug.Log ("AndroidNativeRewardedVideoManager > CheckRewardedVideoAvailability(" + adConfig + ")");
 
+			// The value needs to be retrieved in Android UI thread so we have to wait until the value is available.
+			// This also means that calling this method should not be called too often on Android because it is quite slow.
+			AutoResetEvent rewardedVideoStatusRetrieved = new AutoResetEvent(false);
+
+			bool available = false;
 			AndroidUtils.Instance.RunOnJavaUiThread (() => {
 				var rewardedVideoPlacement = new AndroidJavaObject (JavaClass.SASRewardedVideoPlacement, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
 				GetRewardedVideoManager ().Call (JavaMethod.SetRewardedVideoListener, new RewardedVideoListener(this));
-				var available = GetRewardedVideoManager ().Call<bool> (JavaMethod.HasRewardedVideo, rewardedVideoPlacement);
+				available = GetRewardedVideoManager ().Call<bool> (JavaMethod.HasRewardedVideo, rewardedVideoPlacement);
 
-				callback (available);
+				rewardedVideoStatusRetrieved.Set (); // The rewarded video status is available.
 			});
+
+			rewardedVideoStatusRetrieved.WaitOne (); // Waiting for the rewarded video status.
+
+			return available;
 		}
 
 		/// <summary>

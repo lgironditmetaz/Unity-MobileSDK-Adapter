@@ -55,18 +55,14 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 
 		/// <summary>
 		/// Checks if a rewarded video interstitial is available for for a given placement.
-		/// This operation is asynchronous and requires a callback function send its result.
 		/// </summary>
-		/// <param name="adConfig">Ad config.</param>
-		/// <param name="callback">The callback that will be called with the availability status.</param>
-		override public void CheckRewardedVideoAvailability(AdConfig adConfig, Action<bool> callback)
+		/// <returns><c>true</c> if a rewarded video interstitial is available for this adConfig; otherwise, <c>false</c>.</returns>
+		/// <param name="adConfig">The ad config representing the placement.</param>
+		override public bool HasRewardedVideo(AdConfig adConfig)
 		{
 			Debug.Log ("iOSNativeRewardedVideoManager > CheckRewardedVideoAvailability(" + adConfig + ")");
 			int result = _HasRewardedVideo (adConfig.BaseUrl, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
-
-			// The callback is called immediately with default value in this implementation so there is no need
-			// for a special case in the user app for Default native rewarded video manager implementation
-			callback (result == 1 ? true : false); 
+			return result == 1 ? true : false; 
 		}
 	}
 }

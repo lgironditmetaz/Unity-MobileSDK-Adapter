@@ -29,11 +29,10 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 
 		/// <summary>
 		/// Checks if a rewarded video interstitial is available for for a given placement.
-		/// This operation is asynchronous and requires a callback function send its result.
 		/// </summary>
-		/// <param name="adConfig">Ad config.</param>
-		/// <param name="callback">The callback that will be called with the availability status.</param>
-		public abstract void CheckRewardedVideoAvailability(AdConfig adConfig, Action<bool> callback);
+		/// <returns><c>true</c> if a rewarded video interstitial is available for this adConfig; otherwise, <c>false</c>.</returns>
+		/// <param name="adConfig">The ad config representing the placement.</param>
+		public abstract bool HasRewardedVideo(AdConfig adConfig);
 
 	}
 }
