@@ -15,6 +15,26 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 	public abstract class NativeRewardedVideoManager
 	{
 		/// <summary>
+		/// Occurs when the rewarded video is successfully loaded.
+		/// </summary>
+		public event EventHandler RewardedVideoLoadingSuccess;
+
+		/// <summary>
+		/// Occurs when the rewarded video loading fails.
+		/// </summary>
+		public event EventHandler RewardedVideoLoadingFailure;
+
+		/// <summary>
+		/// Occurs when the rewarded video cannot play the video.
+		/// </summary>
+		public event EventHandler RewardedVideoPlaybackFailure;
+
+		/// <summary>
+		/// Occurs when the rewarded video receives a reward after a completed video playback.
+		/// </summary>
+		public event EventHandler RewardedVideoRewardReceived;
+
+		/// <summary>
 		/// Loads a rewarded video interstitial for a given placement.
 		/// </summary>
 		/// <param name="adConfig">The ad config representing the placement.</param>
@@ -33,6 +53,54 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		/// <returns><c>true</c> if a rewarded video interstitial is available for this adConfig; otherwise, <c>false</c>.</returns>
 		/// <param name="adConfig">The ad config representing the placement.</param>
 		public abstract bool HasRewardedVideo(AdConfig adConfig);
+
+		/// <summary>
+		/// Event called when the rewarded video is successfully loaded.
+		/// </summary>
+		/// <param name="sender">Sender.</param>
+		/// <param name="e">Event argument.</param>
+		protected void NotifyRewardedVideoLoadingSuccess(EventArgs e)
+		{
+			if (RewardedVideoLoadingSuccess != null) {
+				RewardedVideoLoadingSuccess (this, e);
+			}
+		}
+
+		/// <summary>
+		/// Event called when the rewarded video loading fails.
+		/// </summary>
+		/// <param name="sender">Sender.</param>
+		/// <param name="e">Event argument.</param>
+		protected void NotifyRewardedVideoLoadingFailure(EventArgs e)
+		{
+			if (RewardedVideoLoadingFailure != null) {
+				RewardedVideoLoadingFailure (this, e);
+			}
+		}
+
+		/// <summary>
+		/// Event called when the rewarded video cannot play the video.
+		/// </summary>
+		/// <param name="sender">Sender.</param>
+		/// <param name="e">Event argument.</param>
+		protected void NotifyRewardedVideoPlaybackFailure(EventArgs e)
+		{
+			if (RewardedVideoPlaybackFailure != null) {
+				RewardedVideoPlaybackFailure (this, e);
+			}
+		}
+
+		/// <summary>
+		/// Event called when the rewarded video receives a reward after a completed video playback.
+		/// </summary>
+		/// <param name="sender">Sender.</param>
+		/// <param name="e">Event argument.</param>
+		protected void NotifyRewardedVideoRewardReceived(EventArgs e)
+		{
+			if (RewardedVideoRewardReceived != null) {
+				RewardedVideoRewardReceived (this, e);
+			}
+		}
 
 	}
 }

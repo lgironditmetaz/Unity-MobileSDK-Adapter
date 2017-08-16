@@ -16,6 +16,42 @@ namespace SmartAdServer.Unity.Library.Rewarded
 	public class RewardedVideoManager
 	{
 		/// <summary>
+		/// Occurs when the rewarded video is successfully loaded.
+		/// </summary>
+		public event EventHandler RewardedVideoLoadingSuccess
+		{
+			add { _nativeRewardedVideoManager.RewardedVideoLoadingSuccess += value; }
+			remove { _nativeRewardedVideoManager.RewardedVideoLoadingSuccess -= value; }
+		}
+
+		/// <summary>
+		/// Occurs when the rewarded video loading fails.
+		/// </summary>
+		public event EventHandler RewardedVideoLoadingFailure
+		{
+			add { _nativeRewardedVideoManager.RewardedVideoLoadingFailure += value; }
+			remove { _nativeRewardedVideoManager.RewardedVideoLoadingFailure -= value; }
+		}
+
+		/// <summary>
+		/// Occurs when the rewarded video cannot play the video.
+		/// </summary>
+		public event EventHandler RewardedVideoPlaybackFailure
+		{
+			add { _nativeRewardedVideoManager.RewardedVideoPlaybackFailure += value; }
+			remove { _nativeRewardedVideoManager.RewardedVideoPlaybackFailure -= value; }
+		}
+
+		/// <summary>
+		/// Occurs when the rewarded video receives a reward after a completed video playback.
+		/// </summary>
+		public event EventHandler RewardedVideoRewardReceived
+		{
+			add { _nativeRewardedVideoManager.RewardedVideoRewardReceived += value; }
+			remove { _nativeRewardedVideoManager.RewardedVideoRewardReceived -= value; }
+		}
+
+		/// <summary>
 		/// The unique instance of the rewarded video manager.
 		/// </summary>
 		private static readonly RewardedVideoManager _instance = new RewardedVideoManager();
