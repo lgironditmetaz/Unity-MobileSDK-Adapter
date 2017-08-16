@@ -6,6 +6,7 @@ using System.Collections;
 using SmartAdServer.Unity.Library.Models;
 using SmartAdServer.Unity.Library.Events;
 using SmartAdServer.Unity.Library.UI;
+using SmartAdServer.Unity.Library.Rewarded;
 
 public class GameController : MonoBehaviour
 {
@@ -33,7 +34,8 @@ public class GameController : MonoBehaviour
 
 	private BannerView _bannerView;
 	private InterstitialView _interstitialView;
-	private InterstitialView _rewardedInterstitialView;
+
+	private AdConfig _rewardedVideoInterstitialAdConfig = new AdConfig ("https://mobile.smartadserver.com", 104808, "795153", 12167, true, "rewardedvideo");
 
 	void Start ()
 	{
@@ -43,6 +45,7 @@ public class GameController : MonoBehaviour
 		StartCoroutine (SpawnWaves ());
 
 		LoadBanner (); // The banner is loaded as soon as the game starts but isn't displayed immediately
+		LoadRewardedVideoInterstitial (); // The rewarded video interstitial is loaded as soon as the game starts but isn't displayed immediately
 	}
 	
 	public void GameOver ()
@@ -71,6 +74,18 @@ public class GameController : MonoBehaviour
 		// Register success & failure events
 		_bannerView.AdViewLoadingSuccess += BannerViewSuccess;
 		_bannerView.AdViewLoadingFailure += BannerViewFailure;
+	}
+
+	void LoadRewardedVideoInterstitial()
+	{
+		// Loading the rewarded video interstitial using the rewarded video manager and an ad config
+		RewardedVideoManager.Instance.LoadRewardedVideo (_rewardedVideoInterstitialAdConfig);
+
+		// Register success, failure & reward events
+		RewardedVideoManager.Instance.RewardedVideoLoadingSuccess += RewardedVideoLoadingSuccess;
+		RewardedVideoManager.Instance.RewardedVideoLoadingFailure += RewardedVideoLoadingFailure;
+		RewardedVideoManager.Instance.RewardedVideoPlaybackFailure += RewardedVideoPlaybackFailure;
+		RewardedVideoManager.Instance.RewardedVideoRewardReceived += RewardedVideoRewardReceived;
 	}
 
 	void DisplayAds ()
@@ -106,23 +121,8 @@ public class GameController : MonoBehaviour
 
 	void DisplayRewardedInterstitial ()
 	{
-		Debug.Log ("GameController: DisplayRewardedInterstitial");
-
-		// Destroy the old interstitialview if needed
-		if (_rewardedInterstitialView != null) {
-			_rewardedInterstitialView.Destroy ();
-		}
-		// Create a new interstitialview instance
-		_rewardedInterstitialView = new InterstitialView ();
-
-		// Create an adconfig object that will store informations about the ad placement and use it to load the ad
-		AdConfig adConfig = new AdConfig ("https://mobile.smartadserver.com", 94198, "627899", 15140, true, "video-interstitial-endcard");
-		_rewardedInterstitialView.LoadAd (adConfig); // The interstitial is displayed automatically when loaded
-
-		// Register success & failure events
-		_rewardedInterstitialView.AdViewLoadingSuccess += RewardedInterstitialViewSuccess;
-		_rewardedInterstitialView.AdViewLoadingFailure += RewardedInterstitialViewFailure;
-		_rewardedInterstitialView.AdViewRewardReceived += RewardedInterstitialViewRewardReceived;
+		RewardedVideoManager.Instance.ShowRewardedVideo (_rewardedVideoInterstitialAdConfig);
+		RewardButton.gameObject.SetActive (false); // There will be no rewarded video ad remaining so we can deactivate the reward button
 	}
 	
 	void BannerViewSuccess (object sender, System.EventArgs e)
@@ -150,28 +150,34 @@ public class GameController : MonoBehaviour
 		Debug.Log ("GameController: InterstitialViewFailure");
 	}
 
-	void RewardedInterstitialViewSuccess (object sender, System.EventArgs e)
+	void RewardedVideoLoadingSuccess (object sender, System.EventArgs e)
 	{
-		// Event called when the interstitial is loaded successfuly
-		Debug.Log ("GameController: RewardedInterstitialViewSuccess");
+		// Event called when the rewarded video interstitial is loaded
+		Debug.Log ("GameController: RewardedVideoLoadingSuccess");
 	}
 
-	void RewardedInterstitialViewFailure (object sender, System.EventArgs e)
+	void RewardedVideoLoadingFailure (object sender, System.EventArgs e)
 	{
-		// Event called when the interstitial fails to load
-		Debug.Log ("GameController: RewardedInterstitialViewFailure");
+		// Event called when the rewarded video interstitial fails to load
+		Debug.Log ("GameController: RewardedVideoLoadingFailure");
 	}
 
-	void RewardedInterstitialViewRewardReceived (object sender, System.EventArgs e)
+	void RewardedVideoPlaybackFailure (object sender, System.EventArgs e)
 	{
-		var rewardReceivedEventArgs = (RewardReceivedEventArgs)e;
+		// Event called when the rewarded video interstitial fails to play the video
+		Debug.Log ("GameController: RewardedVideoPlaybackFailure");
+	}
 
-		// Event called when the user has collected a reward by watching the ad.
+	void RewardedVideoRewardReceived (object sender, System.EventArgs e)
+	{
+		var rewardReceivedEventArgs = (RewardedVideoRewardReceivedArgs)e;
+
+		// Event called when the user has collected a reward by watching the rewarded video interstitial.
 		// You can get more information about the reward (the currency and the amount) using the event args object.
-		Debug.Log ("GameController: RewardedInterstitialViewRewardReceived");
+		Debug.Log ("GameController: RewardedVideoRewardReceived");
 		Debug.Log ("Reward Info: " + rewardReceivedEventArgs.Amount + " " + rewardReceivedEventArgs.Currency);
 
-		ShowRewardedPanel (rewardReceivedEventArgs);
+		ShowRewardedPanel (rewardReceivedEventArgs.Currency, rewardReceivedEventArgs.Amount);
 	}
 
 	public void ActualReloading ()
@@ -183,9 +189,6 @@ public class GameController : MonoBehaviour
 		}
 		if (_interstitialView != null) {
 			_interstitialView.Destroy ();
-		}
-		if (_rewardedInterstitialView != null) {
-			_rewardedInterstitialView.Destroy ();
 		}
 
 		SceneManager.LoadScene (SceneManager.GetActiveScene().buildIndex);
@@ -238,11 +241,14 @@ public class GameController : MonoBehaviour
 	{
 		yield return new WaitForSeconds (AdWait);
 
+		var rewardedVideoInterstitialLoaded = RewardedVideoManager.Instance.HasRewardedVideo (_rewardedVideoInterstitialAdConfig);
+		Debug.Log ("GameController: ActivateReload - rewarded video interstitial loaded: " + rewardedVideoInterstitialLoaded);
+
 		if (SystemInfo.deviceType == DeviceType.Desktop) {
 			ReloadText.enabled = true;
 		} else {
 			ReloadButton.gameObject.SetActive (true);
-			RewardButton.gameObject.SetActive (true);
+			RewardButton.gameObject.SetActive (rewardedVideoInterstitialLoaded); // the 'get reward' button is enabled only if we have an ad
 		}
 		_reload = true;
 	}
@@ -267,9 +273,9 @@ public class GameController : MonoBehaviour
 		EndText.enabled = false;
 	}
 
-	void ShowRewardedPanel(RewardReceivedEventArgs reward)
+	void ShowRewardedPanel(string currency, double amount)
 	{
-		_rewardedDescription.text = "You won " + reward.Amount + " " + reward.Currency + "!";
+		_rewardedDescription.text = "You won " + amount + " " + currency + "!";
 		_rewardedPanel.SetActive (true);
 
 		// The banner is hidden when the panel is displayed because the banner is on top of the game
