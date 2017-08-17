@@ -82,31 +82,58 @@
 @end
 
 
+@interface SASRewardedVideoDelegateStatus : NSObject
+@property (nonatomic, assign) BOOL rewardedVideoDidLoadCalled;
+@property (nonatomic, assign) BOOL rewardedVideoDidFailToLoad;
+@property (nonatomic, assign) BOOL rewardedVideoDidFailToShow;
+@property (nonatomic, assign) BOOL rewardedVideoDidCollectReward;
+@property (nonatomic, strong) SASReward *reward;
+@end
+
+@implementation SASRewardedVideoDelegateStatus
+@end
 
 @interface SASRewardedVideoDelegateHolder : NSObject <SASRewardedVideoDelegate>
+@property (nonatomic, strong) NSMutableDictionary <NSString *, SASRewardedVideoDelegateStatus *> *status;
+- (void)reset;
+- (void)resetForPlacement:(SASRewardedVideoPlacement *)placement;
 @end
 
 @implementation SASRewardedVideoDelegateHolder
+- (instancetype)init {
+  if (self = [super init]) {
+    self.status = [NSMutableDictionary new];
+  }
+  return self;
+}
+- (void)reset {
+  self.status = [NSMutableDictionary new];
+}
+- (void)resetForPlacement:(SASRewardedVideoPlacement *)placement {
+  [self.status setObject:[SASRewardedVideoDelegateStatus new] forKey:[self placementToString:placement]];
+}
+- (SASRewardedVideoDelegateStatus *)statusForPlacement:(SASRewardedVideoPlacement *)placement {
+  return [self.status objectForKey:[self placementToString:placement]];
+}
+- (NSString *)placementToString:(SASRewardedVideoPlacement *)placement {
+  return [NSString stringWithFormat:@"%ld-%@-%ld-%@", placement.pageId, placement.pageName, placement.formatId, placement.target];
+}
 - (void)rewardedVideoDidLoadAd:(SASAd *)ad forPlacement:(SASRewardedVideoPlacement *)placement {
+  NSLog(@"RewardedVideo for placement %@ did load", placement);
+  [self.status objectForKey:[self placementToString:placement]].rewardedVideoDidLoadCalled = YES;
 }
 - (void)rewardedVideoDidFailToLoadForPlacement:(SASRewardedVideoPlacement *)placement error:(nullable NSError *)error {
+  NSLog(@"RewardedVideo for placement %@ did fail to load with error: %@", placement, error);
+  [self.status objectForKey:[self placementToString:placement]].rewardedVideoDidFailToLoad = YES;
 }
 - (void)rewardedVideoDidFailToShowForPlacement:(SASRewardedVideoPlacement *)placement error:(nullable NSError *)error {
-}
-- (void)rewardedVideoDidAppearForPlacement:(SASRewardedVideoPlacement *)placement fromViewController:(UIViewController *)controller {
-}
-- (void)rewardedVideoDidDisappearForPlacement:(SASRewardedVideoPlacement *)placement fromViewController:(UIViewController *)controller {
-}
-- (void)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement didSendVideoEvent:(SASVideoEvent)videoEvent {
+  NSLog(@"RewardedVideo for placement %@ did fail to show with error: %@", placement, error);
+  [self.status objectForKey:[self placementToString:placement]].rewardedVideoDidFailToShow = YES;
 }
 - (void)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement didCollectReward:(SASReward *)reward {
-}
-- (BOOL)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement shouldHandleURL:(NSURL *)URL {
-    return YES;
-}
-- (void)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement willPresentModalViewFromViewController:(UIViewController *)controller {
-}
-- (void)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement willDismissModalViewFromViewController:(UIViewController *)controller {
+  NSLog(@"RewardedVideo for placement %@ did collect reward:\n%@", placement, reward);
+  [self.status objectForKey:[self placementToString:placement]].rewardedVideoDidCollectReward = YES;
+  [self.status objectForKey:[self placementToString:placement]].reward = reward;
 }
 @end
 
@@ -218,7 +245,16 @@ extern "C" {
     return [SASRewardedVideoPlacement rewardedVideoPlacementWithPageId:[pageIdString intValue]  formatId:formatId target:targetString];
   }
 
+  static SASRewardedVideoDelegateHolder *rewardedVideoDelegate = nil;
+
   void _LoadRewardedVideo(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+      rewardedVideoDelegate = [[SASRewardedVideoDelegateHolder alloc] init];
+    });
+    [SASRewardedVideo setDelegate:rewardedVideoDelegate];
+
+    [rewardedVideoDelegate resetForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
     [SASRewardedVideo loadAdForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
   }
 
@@ -228,6 +264,36 @@ extern "C" {
 
   int _HasRewardedVideo(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
     return [SASRewardedVideo isAdReadyForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)] ? 1 : 0;
+  }
+
+  int _CheckRewardedVideoDidLoad(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    SASRewardedVideoDelegateStatus *status = [rewardedVideoDelegate statusForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
+    return status.rewardedVideoDidLoadCalled ? 1 : 0;
+  }
+
+  int _CheckRewardedVideoDidFailToLoad(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    SASRewardedVideoDelegateStatus *status = [rewardedVideoDelegate statusForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
+    return status.rewardedVideoDidFailToLoad ? 1 : 0;
+  }
+
+  int _CheckRewardedVideoDidFailToShow(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    SASRewardedVideoDelegateStatus *status = [rewardedVideoDelegate statusForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
+    return status.rewardedVideoDidFailToShow ? 1 : 0;
+  }
+
+  int _CheckRewardedVideoDidCollectReward(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    SASRewardedVideoDelegateStatus *status = [rewardedVideoDelegate statusForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
+    return status.rewardedVideoDidCollectReward ? 1 : 0;
+  }
+
+  const char *_RetrieveRewardedVideoCurrency(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    SASRewardedVideoDelegateStatus *status = [rewardedVideoDelegate statusForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
+    return MakeStringCopy([status.reward.currency UTF8String]);
+  }
+
+  double _RetrieveRewardedVideoAmount(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    SASRewardedVideoDelegateStatus *status = [rewardedVideoDelegate statusForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
+    return [status.reward.amount doubleValue];
   }
 
 }
