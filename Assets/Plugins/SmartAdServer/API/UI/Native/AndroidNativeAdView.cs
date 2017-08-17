@@ -147,6 +147,9 @@ namespace SmartAdServer.Unity.Library.UI.Native
 		{
 			Debug.Log ("SmartAdServer.Unity.Library.UI.Native.AndroidNativeAdView: loading ad…");
 
+			// Setting the baseUrl
+			new AndroidJavaClass(JavaClass.SASAdView).CallStatic (JavaMethod.SetBaseUrl, _currentAdConfig.BaseUrl);
+
 			// Make the actual ad call with a listener to retrieve the response
 			GetAdViewObject ().Call (
 				JavaMethod.LoadAd,

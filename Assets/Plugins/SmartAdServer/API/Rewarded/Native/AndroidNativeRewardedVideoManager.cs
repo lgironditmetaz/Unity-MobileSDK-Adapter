@@ -31,6 +31,10 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 			Debug.Log ("AndroidNativeRewardedVideoManager > LoadRewardedVideo(" + adConfig + ")");
 
 			AndroidUtils.Instance.RunOnJavaUiThread (() => {
+				// Setting the baseUrl
+				new AndroidJavaClass(JavaClass.SASAdView).CallStatic (JavaMethod.SetBaseUrl, adConfig.BaseUrl);
+
+				// Loading the rewarded video interstitial
 				var rewardedVideoPlacement = new AndroidJavaObject (JavaClass.SASRewardedVideoPlacement, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
 				GetRewardedVideoManager ().Call (JavaMethod.SetRewardedVideoListener, new RewardedVideoListener(this));
 				GetRewardedVideoManager ().Call (JavaMethod.LoadRewardedVideo, rewardedVideoPlacement);
