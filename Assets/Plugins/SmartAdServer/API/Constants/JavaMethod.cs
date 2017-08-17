@@ -40,6 +40,11 @@ namespace SmartAdServer.Unity.Library.Constants
 		public static readonly string ShowRewardedVideo = "showRewardedVideo";
 		public static readonly string HasRewardedVideo = "hasRewardedVideo";
 		public static readonly string SetRewardedVideoListener = "setRewardedVideoListener";
+
+		public static readonly string GetSiteId = "getSiteId";
+		public static readonly string GetPageId = "getPageId";
+		public static readonly string GetFormatId = "getFormatId";
+		public static readonly string GetTarget = "getTarget";
 	}
 }
 

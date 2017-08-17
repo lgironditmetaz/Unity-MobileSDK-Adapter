@@ -93,6 +93,22 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		}
 
 		/// <summary>
+		/// Retrieve an ad config instance from a Java placement object.
+		/// </summary>
+		/// <returns>The ad config.</returns>
+		/// <param name="placement">A Java placement object.</param>
+		private static AdConfig adConfigFromPlacement(AndroidJavaObject placement)
+		{
+			string baseUrl = new AndroidJavaClass (JavaClass.SASAdView).CallStatic<String> (JavaMethod.GetBaseUrl);
+			int siteId = placement.Call<int> (JavaMethod.GetSiteId);
+			string pageId = placement.Call<string> (JavaMethod.GetPageId);
+			int formatId = placement.Call<int> (JavaMethod.GetFormatId);
+			string target = placement.Call<string> (JavaMethod.GetTarget);
+
+			return new AdConfig (baseUrl, siteId, pageId, formatId, target);
+		}
+
+		/// <summary>
 		/// Class that will act as a Java listener to handle ad call success & failure and playback events.
 		/// </summary>
 		class RewardedVideoListener : AndroidJavaProxy
@@ -106,23 +122,17 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 
 			void onRewardedVideoAdLoadingCompleted(AndroidJavaObject placement, AndroidJavaObject adElement) {
 				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoAdLoadingCompleted");
-
-				var adConfig = new AdConfig ("https://mobile.smartadserver.com", 0, "0", 0, null); // TODO extract the right adConfig from placement
-				callerManager.NotifyRewardedVideoLoadingSuccess (new RewardedVideoLoadingSuccessArgs (adConfig));
+				callerManager.NotifyRewardedVideoLoadingSuccess (new RewardedVideoLoadingSuccessArgs (adConfigFromPlacement(placement)));
 			}
 
 			void onRewardedVideoAdLoadingFailed(AndroidJavaObject placement, AndroidJavaObject exception) {
 				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoAdLoadingFailed(" + exception.Call<String>(JavaMethod.ToStringJava) + ")");
-
-				var adConfig = new AdConfig ("https://mobile.smartadserver.com", 0, "0", 0, null); // TODO extract the right adConfig from placement
-				callerManager.NotifyRewardedVideoLoadingFailure (new RewardedVideoLoadingFailureArgs (adConfig));
+				callerManager.NotifyRewardedVideoLoadingFailure (new RewardedVideoLoadingFailureArgs (adConfigFromPlacement(placement)));
 			}
 
 			void onRewardedVideoPlaybackError(AndroidJavaObject placement, AndroidJavaObject exception) {
 				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoPlaybackError(" + exception.Call<String>(JavaMethod.ToStringJava) + ")");
-
-				var adConfig = new AdConfig ("https://mobile.smartadserver.com", 0, "0", 0, null); // TODO extract the right adConfig from placement
-				callerManager.NotifyRewardedVideoPlaybackFailure (new RewardedVideoPlaybackFailureArgs (adConfig));
+				callerManager.NotifyRewardedVideoPlaybackFailure (new RewardedVideoPlaybackFailureArgs (adConfigFromPlacement(placement)));
 			}
 
 			void onRewardedVideoClosed(AndroidJavaObject placement) {
@@ -138,9 +148,7 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 
 				Double amount = reward.Call<Double> (JavaMethod.GetAmount);
 				String currency = reward.Call<String> (JavaMethod.GetCurrency);
-
-				var adConfig = new AdConfig ("https://mobile.smartadserver.com", 0, "0", 0, null); // TODO extract the right adConfig from placement
-				callerManager.NotifyRewardedVideoRewardReceived (new RewardedVideoRewardReceivedArgs (adConfig, currency, amount));
+				callerManager.NotifyRewardedVideoRewardReceived (new RewardedVideoRewardReceivedArgs (adConfigFromPlacement(placement), currency, amount));
 			}
 
 			void onRewardedVideoEvent(AndroidJavaObject placement, Int32 videoEvent) {
