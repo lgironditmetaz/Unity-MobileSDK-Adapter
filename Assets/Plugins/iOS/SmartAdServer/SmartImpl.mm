@@ -83,7 +83,7 @@
 
 
 
-@interface SASRewardedVideoDelegateHolder <SASRewardedVideoDelegate>
+@interface SASRewardedVideoDelegateHolder : NSObject <SASRewardedVideoDelegate>
 @end
 
 @implementation SASRewardedVideoDelegateHolder
