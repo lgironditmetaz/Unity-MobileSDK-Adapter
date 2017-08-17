@@ -86,6 +86,7 @@
 @property (nonatomic, assign) BOOL rewardedVideoDidLoadCalled;
 @property (nonatomic, assign) BOOL rewardedVideoDidFailToLoad;
 @property (nonatomic, assign) BOOL rewardedVideoDidFailToShow;
+@property (nonatomic, assign) BOOL rewardedVideoDidDisappear;
 @property (nonatomic, assign) BOOL rewardedVideoDidCollectReward;
 @property (nonatomic, strong) SASReward *reward;
 @end
@@ -129,6 +130,10 @@
 - (void)rewardedVideoDidFailToShowForPlacement:(SASRewardedVideoPlacement *)placement error:(nullable NSError *)error {
   NSLog(@"RewardedVideo for placement %@ did fail to show with error: %@", placement, error);
   [self.status objectForKey:[self placementToString:placement]].rewardedVideoDidFailToShow = YES;
+}
+- (void)rewardedVideoDidDisappearForPlacement:(SASRewardedVideoPlacement *)placement fromViewController:(UIViewController *)controller {
+  NSLog(@"RewardedVideo for placement %@ did disappear", placement);
+  [self.status objectForKey:[self placementToString:placement]].rewardedVideoDidDisappear = YES;
 }
 - (void)rewardedVideoForPlacement:(SASRewardedVideoPlacement *)placement didCollectReward:(SASReward *)reward {
   NSLog(@"RewardedVideo for placement %@ did collect reward:\n%@", placement, reward);
@@ -279,6 +284,11 @@ extern "C" {
   int _CheckRewardedVideoDidFailToShow(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
     SASRewardedVideoDelegateStatus *status = [rewardedVideoDelegate statusForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
     return status.rewardedVideoDidFailToShow ? 1 : 0;
+  }
+
+  int _CheckRewardedVideoDidDisappear(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
+    SASRewardedVideoDelegateStatus *status = [rewardedVideoDelegate statusForPlacement:placementFromID(baseUrl, siteId, pageId, formatId, target)];
+    return status.rewardedVideoDidDisappear ? 1 : 0;
   }
 
   int _CheckRewardedVideoDidCollectReward(char *baseUrl, int siteId, char *pageId, int formatId, char *target) {
