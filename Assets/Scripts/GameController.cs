@@ -35,7 +35,7 @@ public class GameController : MonoBehaviour
 	private BannerView _bannerView;
 	private InterstitialView _interstitialView;
 
-	private AdConfig _rewardedVideoInterstitialAdConfig = new AdConfig ("http://mobile.smartadserver.com", 104808, "795153", 12167, true, "rewardedvideo");
+	private AdConfig _rewardedVideoInterstitialAdConfig = new AdConfig ("https://mobile.smartadserver.com", 104808, "795153", 12167, true, "rewardedvideo");
 
 	void Start ()
 	{
@@ -68,7 +68,7 @@ public class GameController : MonoBehaviour
 		}
 
 		// Create an adconfig object that will store informations about the ad placement and use it to load the ad
-		AdConfig adConfig = new AdConfig ("http://mobile.smartadserver.com", 104808, "663262", 15140, true, "");
+		AdConfig adConfig = new AdConfig ("https://mobile.smartadserver.com", 104808, "663262", 15140, true, "");
 		_bannerView.LoadAd (adConfig);
 
 		// Register success & failure events
@@ -111,7 +111,7 @@ public class GameController : MonoBehaviour
 		_interstitialView = new InterstitialView ();
 
 		// Create an adconfig object that will store informations about the ad placement and use it to load the ad
-		AdConfig adConfig = new AdConfig ("http://mobile.smartadserver.com", 104808, "663264", 12167, true, "");
+		AdConfig adConfig = new AdConfig ("https://mobile.smartadserver.com", 104808, "663264", 12167, true, "");
 		_interstitialView.LoadAd (adConfig); // The interstitial is displayed automatically when loaded
 
 		// Register success & failure events
