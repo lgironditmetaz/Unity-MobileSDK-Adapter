@@ -140,6 +140,16 @@
   [self.status objectForKey:[self placementToString:placement]].rewardedVideoDidCollectReward = YES;
   [self.status objectForKey:[self placementToString:placement]].reward = reward;
 }
+- (BOOL)rewardedVideoShouldHandleAudioSession {
+  NSLog(@"RewardedVideo will not handle audio session");
+  return NO;
+}
+- (void)rewardedVideoWillPlayAudio {
+  NSLog(@"RewardedVideo will play audio");
+}
+- (void)rewardedVideoDidFinishPlayingAudio {
+  NSLog(@"RewardedVideo did finish playing audio");
+}
 @end
 
 /////////////////////////////////////////////////////////////////////////////////
