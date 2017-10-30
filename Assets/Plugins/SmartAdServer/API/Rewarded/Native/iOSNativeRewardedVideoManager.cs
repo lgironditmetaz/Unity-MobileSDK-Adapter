@@ -17,6 +17,23 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 	public class iOSNativeRewardedVideoManager : NativeRewardedVideoManager
 	{
 
+        public class PlacementStatus
+        {
+            public Timer timer;
+
+            public bool loadStatus;
+            public bool rewarded;
+            
+            public PlacementStatus(Timer timer)
+            {
+                this.timer = timer;
+
+                this.loadStatus = false;
+                this.rewarded = false;
+            }
+
+        }
+
 		////////////////////////////////////
 		/// Native Wrapper 
 		////////////////////////////////////
@@ -52,12 +69,11 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		private static extern double _RetrieveRewardedVideoAmount(string baseUrl, int siteId, string pageId, int formatId, string target);
 
 
-		////////////////////////////////////
-		/// Native rewarded video manager override 
-		////////////////////////////////////
+        ////////////////////////////////////
+        /// Native rewarded video manager override 
+        ////////////////////////////////////
 
-		private Dictionary<AdConfig, Timer> _timers = new Dictionary<AdConfig, Timer>(); 
-		private Dictionary<AdConfig, bool> _loadStatus = new Dictionary<AdConfig, bool>(); 
+        private Dictionary<AdConfig, PlacementStatus> _placementStatus = new Dictionary<AdConfig, PlacementStatus>();
 
 		/// <summary>
 		/// Loads a rewarded video interstitial for a given placement.
@@ -67,7 +83,7 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		{
 			Debug.Log ("iOSNativeRewardedVideoManager > LoadRewardedVideo(" + adConfig + ")");
 
-			if (_timers.ContainsKey (adConfig)) {
+            if (_placementStatus.ContainsKey (adConfig)) {
 				Debug.Log ("There is already a rewarded video interstitial being loaded or waiting to be shown for this ad config!\nLoading cancelled!");
 				return;
 			}
@@ -77,8 +93,7 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 			timer.Interval = 100;
 			timer.Enabled = true;
 
-			_timers.Add (adConfig, timer);
-			_loadStatus.Add (adConfig, false);
+            _placementStatus.Add(adConfig, new PlacementStatus(timer));
 
 			_LoadRewardedVideo (adConfig.BaseUrl, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
 		}
@@ -114,17 +129,16 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		/// <param name="adConfig">Ad config handled by this timer.</param>
 		private void OnDelegateTimerEvent(object source, ElapsedEventArgs e, AdConfig adConfig) 
 		{
-			if (_loadStatus [adConfig] == false) {
+            if (_placementStatus [adConfig].loadStatus == false) {
 				// Waiting for ad loading or failure
 
 				bool isRewardedVideoDidFailToLoad = _CheckRewardedVideoDidFailToLoad (adConfig.BaseUrl, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target) == 1 ? true : false;
 				if (isRewardedVideoDidFailToLoad) {
 					Debug.Log ("iOSNativeRewardedVideoManager > OnDelegateTimerEvent() > rewarded video interstitial fails to load!");
 
-					_timers [adConfig].Enabled = false;
-					_timers.Remove (adConfig);
-					_loadStatus.Remove (adConfig);
-
+                    _placementStatus [adConfig].timer.Enabled = false;
+                    _placementStatus.Remove(adConfig);
+                
 					NotifyRewardedVideoLoadingFailure (new RewardedVideoLoadingFailureArgs (adConfig));
 
 					return;
@@ -134,7 +148,7 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 				if (isRewardedVideoDidLoad) {
 					Debug.Log ("iOSNativeRewardedVideoManager > OnDelegateTimerEvent() > rewarded video interstitial did load");
 
-					_loadStatus [adConfig] = true;
+                    _placementStatus [adConfig].loadStatus = true;
 
 					NotifyRewardedVideoLoadingSuccess (new RewardedVideoLoadingSuccessArgs (adConfig));
 
@@ -148,16 +162,15 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 				if (isRewardedVideoDidFailToShow) {
 					Debug.Log ("iOSNativeRewardedVideoManager > OnDelegateTimerEvent() > rewarded video interstitial fails to play!");
 
-					_timers [adConfig].Enabled = false;
-					_timers.Remove (adConfig);
-					_loadStatus.Remove (adConfig);
+                    _placementStatus [adConfig].timer.Enabled = false;
+                    _placementStatus.Remove(adConfig);
 
 					NotifyRewardedVideoPlaybackFailure (new RewardedVideoPlaybackFailureArgs (adConfig));
 
 					return;
 				}
 				bool isRewardedVideoDidCollectReward = _CheckRewardedVideoDidCollectReward (adConfig.BaseUrl, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target) == 1 ? true : false;
-				if (isRewardedVideoDidCollectReward) {
+                if (_placementStatus[adConfig].rewarded == false && isRewardedVideoDidCollectReward) {
 					Debug.Log ("iOSNativeRewardedVideoManager > OnDelegateTimerEvent() > rewarded video did collect reward");
 
 					var currency = _RetrieveRewardedVideoCurrency (adConfig.BaseUrl, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
@@ -166,6 +179,8 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 
 					NotifyRewardedVideoRewardReceived (rewardArgs);
 
+                    _placementStatus[adConfig].rewarded = true;
+
 					return;
 				}
 
@@ -173,9 +188,10 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 				if (isRewardedVideoDidDisappear) {
 					Debug.Log ("iOSNativeRewardedVideoManager > OnDelegateTimerEvent() > rewarded video did disappear");
 
-					_timers [adConfig].Enabled = false;
-					_timers.Remove (adConfig);
-					_loadStatus.Remove (adConfig);
+                    _placementStatus [adConfig].timer.Enabled = false;
+                    _placementStatus.Remove(adConfig);
+
+                    // TODO notifiy rewarded video interstitial disappearance
 
 					return;
 				}
