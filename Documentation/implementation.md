@@ -86,6 +86,12 @@ Every ```SASAdView``` instances created in the _C wrapper_ is associated with an
 
 The number of valid _IDs_ is fixed in the current _C wrapper_ implementation. This will probably be changed in a future version: in the meantime, if you want to change the number of _IDs_, you can edit the variable ```MAX_AD_VIEW``` in the file ```SmartImpl.mm```.
 
+**Note:** The SDK can't handle audio session automatically on _iOS_, this feature must be disabled using the relevant delegate method. For instance, for the rewarded video interstitial:
+
+      - (BOOL)rewardedVideoShouldHandleAudioSession {
+        return NO;
+      }
+
 ## Adding an unsupported method call from SASAdView to the adapter
 
 If you need to call a method of the SDK that is not handled by the adapter, you can add it yourself:
