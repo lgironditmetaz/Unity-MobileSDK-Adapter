@@ -52,6 +52,15 @@ namespace SmartAdServer.Unity.Library.Rewarded
 		}
 
 		/// <summary>
+		/// Occurs when the rewarded video interstitial is closed.
+		/// </summary>
+		public event EventHandler RewardedVideoClosed
+		{
+			add { _nativeRewardedVideoManager.RewardedVideoClosed += value; }
+			remove { _nativeRewardedVideoManager.RewardedVideoClosed -= value; }
+		}
+
+		/// <summary>
 		/// The unique instance of the rewarded video manager.
 		/// </summary>
 		private static readonly RewardedVideoManager _instance = new RewardedVideoManager();

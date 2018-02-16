@@ -35,6 +35,11 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		public event EventHandler RewardedVideoRewardReceived;
 
 		/// <summary>
+		/// Occurs when the rewarded video interstitial is closed.
+		/// </summary>
+		public event EventHandler RewardedVideoClosed;
+
+		/// <summary>
 		/// Loads a rewarded video interstitial for a given placement.
 		/// </summary>
 		/// <param name="adConfig">The ad config representing the placement.</param>
@@ -57,7 +62,6 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		/// <summary>
 		/// Event called when the rewarded video is successfully loaded.
 		/// </summary>
-		/// <param name="sender">Sender.</param>
 		/// <param name="e">Event argument.</param>
 		protected void NotifyRewardedVideoLoadingSuccess(EventArgs e)
 		{
@@ -69,7 +73,6 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		/// <summary>
 		/// Event called when the rewarded video loading fails.
 		/// </summary>
-		/// <param name="sender">Sender.</param>
 		/// <param name="e">Event argument.</param>
 		protected void NotifyRewardedVideoLoadingFailure(EventArgs e)
 		{
@@ -81,7 +84,6 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		/// <summary>
 		/// Event called when the rewarded video cannot play the video.
 		/// </summary>
-		/// <param name="sender">Sender.</param>
 		/// <param name="e">Event argument.</param>
 		protected void NotifyRewardedVideoPlaybackFailure(EventArgs e)
 		{
@@ -93,12 +95,22 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 		/// <summary>
 		/// Event called when the rewarded video receives a reward after a completed video playback.
 		/// </summary>
-		/// <param name="sender">Sender.</param>
 		/// <param name="e">Event argument.</param>
 		protected void NotifyRewardedVideoRewardReceived(EventArgs e)
 		{
 			if (RewardedVideoRewardReceived != null) {
 				RewardedVideoRewardReceived (this, e);
+			}
+		}
+
+		/// <summary>
+		/// Event called when the rewarded video interstitial is closed.
+		/// </summary>
+		/// <param name="e">Event argument.</param>
+		protected void NotifyRewardedVideoClosed(EventArgs e)
+		{
+			if (RewardedVideoClosed != null) {
+				RewardedVideoClosed (this, e);
 			}
 		}
 

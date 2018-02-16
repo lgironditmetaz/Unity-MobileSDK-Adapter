@@ -141,6 +141,7 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 
 			void onRewardedVideoClosed(AndroidJavaObject placement) {
 				Debug.Log ("AndroidNativeRewardedVideoManager.RewardedVideoListener > onRewardedVideoClosed");
+				callerManager.NotifyRewardedVideoClosed (new RewardedVideoClosedArgs (adConfigFromPlacement(placement)));
 			}
 
 			void onRewardedVideoClicked(AndroidJavaObject placement, AndroidJavaObject url) {

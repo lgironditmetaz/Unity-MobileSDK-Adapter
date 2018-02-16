@@ -171,15 +171,15 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
 				}
 				bool isRewardedVideoDidCollectReward = _CheckRewardedVideoDidCollectReward (adConfig.BaseUrl, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target) == 1 ? true : false;
                 if (_placementStatus[adConfig].rewarded == false && isRewardedVideoDidCollectReward) {
-					Debug.Log ("iOSNativeRewardedVideoManager > OnDelegateTimerEvent() > rewarded video did collect reward");
+                    Debug.Log ("iOSNativeRewardedVideoManager > OnDelegateTimerEvent() > rewarded video did collect reward");
+
+                    _placementStatus[adConfig].rewarded = true;
 
 					var currency = _RetrieveRewardedVideoCurrency (adConfig.BaseUrl, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
 					var amount = _RetrieveRewardedVideoAmount (adConfig.BaseUrl, adConfig.SiteId, adConfig.PageId, adConfig.FormatId, adConfig.Target);
 					var rewardArgs = new RewardedVideoRewardReceivedArgs (adConfig, currency, amount);
 
 					NotifyRewardedVideoRewardReceived (rewardArgs);
-
-                    _placementStatus[adConfig].rewarded = true;
 
 					return;
 				}
@@ -191,7 +191,7 @@ namespace SmartAdServer.Unity.Library.Rewarded.Native
                     _placementStatus [adConfig].timer.Enabled = false;
                     _placementStatus.Remove(adConfig);
 
-                    // TODO notifiy rewarded video interstitial disappearance
+					NotifyRewardedVideoClosed (new RewardedVideoClosedArgs (adConfig));
 
 					return;
 				}
