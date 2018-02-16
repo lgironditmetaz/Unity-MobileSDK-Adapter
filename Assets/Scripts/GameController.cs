@@ -44,6 +44,8 @@ public class GameController : MonoBehaviour
 		UpdateScore ();
 		StartCoroutine (SpawnWaves ());
 
+		RegisterRewardedVideoInterstitialEventListeners (); // Configuring event listeners for the rewarded video interstitial as soon as possible
+
 		LoadBanner (); // The banner is loaded as soon as the game starts but isn't displayed immediately
 		LoadRewardedVideoInterstitial (); // The rewarded video interstitial is loaded as soon as the game starts but isn't displayed immediately
 	}
@@ -76,16 +78,35 @@ public class GameController : MonoBehaviour
 		_bannerView.AdViewLoadingFailure += BannerViewFailure;
 	}
 
-	void LoadRewardedVideoInterstitial()
+	void RegisterRewardedVideoInterstitialEventListeners()
 	{
-		// Loading the rewarded video interstitial using the rewarded video manager and an ad config
-		RewardedVideoManager.Instance.LoadRewardedVideo (_rewardedVideoInterstitialAdConfig);
-
 		// Register success, failure & reward events
 		RewardedVideoManager.Instance.RewardedVideoLoadingSuccess += RewardedVideoLoadingSuccess;
 		RewardedVideoManager.Instance.RewardedVideoLoadingFailure += RewardedVideoLoadingFailure;
 		RewardedVideoManager.Instance.RewardedVideoPlaybackFailure += RewardedVideoPlaybackFailure;
 		RewardedVideoManager.Instance.RewardedVideoRewardReceived += RewardedVideoRewardReceived;
+		RewardedVideoManager.Instance.RewardedVideoClosed += RewardedVideoClosed;
+
+		// NOTE:
+		// Since RewardedVideoManager is a singleton, you have to unregister all unused or obsolete listeners
+		// by yourself to avoid any crashes or memory leaking.
+		// In this sample, this is done in the UnregisterRewardedVideoInterstitialEventListeners method.
+	}
+
+	void UnregisterRewardedVideoInterstitialEventListeners()
+	{
+		// Unregister success, failure & reward events
+		RewardedVideoManager.Instance.RewardedVideoLoadingSuccess -= RewardedVideoLoadingSuccess;
+		RewardedVideoManager.Instance.RewardedVideoLoadingFailure -= RewardedVideoLoadingFailure;
+		RewardedVideoManager.Instance.RewardedVideoPlaybackFailure -= RewardedVideoPlaybackFailure;
+		RewardedVideoManager.Instance.RewardedVideoRewardReceived -= RewardedVideoRewardReceived;
+		RewardedVideoManager.Instance.RewardedVideoClosed -= RewardedVideoClosed;
+	}
+
+	void LoadRewardedVideoInterstitial()
+	{
+		// Loading the rewarded video interstitial using the rewarded video manager and an ad config
+		RewardedVideoManager.Instance.LoadRewardedVideo (_rewardedVideoInterstitialAdConfig);
 	}
 
 	void DisplayAds ()
@@ -180,6 +201,12 @@ public class GameController : MonoBehaviour
 		ShowRewardedPanel (rewardReceivedEventArgs.Currency, rewardReceivedEventArgs.Amount);
 	}
 
+	void RewardedVideoClosed (object sender, System.EventArgs e)
+	{
+		// Event called when the rewarded video interstitial is closed
+		Debug.Log ("GameController: RewardedVideoClosed");
+	}
+
 	public void ActualReloading ()
 	{
 		// Do not forget to destroy any instantiated ad view when you don't need them anymore
@@ -191,7 +218,11 @@ public class GameController : MonoBehaviour
 			_interstitialView.Destroy ();
 		}
 
-		SceneManager.LoadScene (SceneManager.GetActiveScene().buildIndex);
+		// Don't forget to unregister listeners before reloading the scene!
+		UnregisterRewardedVideoInterstitialEventListeners ();
+
+		// Reload the scene
+		SceneManager.LoadScene (SceneManager.GetActiveScene().name);
 	}
 
 	public void GetReward ()
